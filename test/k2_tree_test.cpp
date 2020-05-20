@@ -289,6 +289,7 @@ namespace
         ASSERT_EQ(std::get<1>(*edge_iterator), (size_t)0);
 
         // OPERATOR ASSIGNMENT
+
         auto another_edge_iterator = edge_iterator;
         ASSERT_EQ(std::get<0>(*another_edge_iterator), (size_t)0);
         ASSERT_EQ(std::get<1>(*another_edge_iterator), (size_t)0);
@@ -312,12 +313,12 @@ namespace
         ASSERT_EQ(std::get<0>(*edge_iterator), (size_t)3);
         ASSERT_EQ(std::get<1>(*edge_iterator), (size_t)2);
         edge_iterator++;
-        ASSERT_EQ(std::get<0>(*edge_iterator), (size_t)4);
-        ASSERT_EQ(std::get<1>(*edge_iterator), (size_t)4);
+        ASSERT_EQ(std::get<0>(*edge_iterator), (size_t)MAX_SIZE_NODE);
+        ASSERT_EQ(std::get<1>(*edge_iterator), (size_t)MAX_SIZE_NODE);
         //find last
         auto last = tree.edge_end();
-        ASSERT_EQ(std::get<0>(*last), tree.size());
-        ASSERT_EQ(std::get<1>(*last), tree.size());
+        ASSERT_EQ(std::get<0>(*last), MAX_SIZE_NODE);
+        ASSERT_EQ(std::get<1>(*last), MAX_SIZE_NODE);
 
         // OPERATOR EQUALS
         ASSERT_TRUE(edge_iterator == tree.edge_end());
@@ -327,8 +328,8 @@ namespace
         swap(last, another_edge_iterator);
         ASSERT_EQ(std::get<0>(*last), (size_t)0);
         ASSERT_EQ(std::get<1>(*last), (size_t)0);
-        ASSERT_EQ(std::get<0>(*another_edge_iterator), tree.size());
-        ASSERT_EQ(std::get<1>(*another_edge_iterator), tree.size());
+        ASSERT_EQ(std::get<0>(*another_edge_iterator), MAX_SIZE_NODE);
+        ASSERT_EQ(std::get<1>(*another_edge_iterator), MAX_SIZE_NODE);
     }
 
     TYPED_TEST(k2_tree_test_k_2, edge_iterator_test_intensive)

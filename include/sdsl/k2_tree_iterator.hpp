@@ -10,6 +10,9 @@
 #include <sdsl/k2_tree.hpp>
 
 using namespace std;
+using namespace sdsl;
+
+const k2_tree_ns::idx_type MAX_SIZE_NODE = 2147483647;
 
 namespace sdsl
 {
@@ -29,7 +32,9 @@ namespace sdsl
         using reference = edge &;
         using iterator_category = std::forward_iterator_tag;
 
-        edge_iterator() {}
+        edge_iterator() {
+            _state_queue = deque<state>();
+        }
         edge_iterator(const t_bv &k_t, const t_bv &k_l, const t_rank &k_t_rank, const uint16_t &k_height) : k_t(&k_t), k_l(&k_l), k_t_rank(&k_t_rank), k_height(k_height)
         {
             _initialize();
@@ -123,7 +128,7 @@ namespace sdsl
         edge_iterator<k, t_bv, t_rank> end()
         {
             edge_iterator<k, t_bv, t_rank> it = *this;
-            it._ptr = new edge(size, size); //end node
+            it._ptr = new edge(MAX_SIZE_NODE, MAX_SIZE_NODE); //end node
             return it;
         }
 
@@ -151,7 +156,7 @@ namespace sdsl
                 }
             }
             if (_state_queue.empty())
-                _ptr = new edge(size, size);
+                _ptr = new edge(MAX_SIZE_NODE, MAX_SIZE_NODE);
             return *this;
         }
 
@@ -218,6 +223,7 @@ namespace sdsl
         _initialize()
         {
             size = std::pow(k, k_height);
+            _state_queue = deque<state>();
             _ptr = new edge(size, size);
 
             if (k_l->size() > 0)
@@ -231,14 +237,13 @@ namespace sdsl
         {
             map<state, bool, struct stateCmp> _duplicate_st;
             idx_type node = 0;
-            unsigned row = 0;
-            unsigned col = 0;
+            unsigned row, col;
             unsigned n = static_cast<size_type>(std::pow(k, k_height)) / k;
             unsigned level = k * std::floor(node / static_cast<double>(n));
 
-            for (; node < size; row = 0, col = 0, node++, level = k * std::floor(node / static_cast<double>(n)))
-                for (; row < k; row++)
-                    for (col = 0; col < k; col++)
+            for (; node < size; node++, level = k * std::floor(node / static_cast<double>(n)))
+                for (row = 0; row < k; row++)
+                    for (col = 0; col < k; col++) 
                         _find_next_recursive_queue(n / k, node % n, n * row, level + row, col, node, _duplicate_st);
         }
 
