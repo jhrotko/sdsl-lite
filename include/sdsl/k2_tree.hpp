@@ -444,6 +444,27 @@ public:
     }
 
     using value_type = uint64_t;
+    class Entry{
+    private:
+        unsigned char e;
+    public:
+        Entry() {}
+        Entry(unsigned char l, unsigned char ra, unsigned char rb) {
+            e = (unsigned char) (l<<2) + (ra<<1) + (rb);
+        }
+
+        inline unsigned char rA() const {
+            return (e & 0x02)>>1;
+        }
+
+        inline unsigned char rB() const {
+            return e & 0x01;
+        }
+
+        inline unsigned char l() const {
+            return e >> 2;
+        }
+    };
     //! Union Operation
     /*! Performs the union operation between two tree. This operations requires both 
          * trees to have the same number of nodes.
@@ -454,15 +475,18 @@ public:
          */
     k2_tree unionOp(k2_tree &k2_B)
     {
-        assert(this->k_k == k2_B.k_k);
+        if(this->k_k != k2_B.k_k)
+            throw std::logic_error("Trees must have the same k.");
+
+        if(k2_B.n_vertices > 0 && n_vertices > 0 && n_vertices != k2_B.n_vertices )
+            throw std::logic_error("Trees must have the same number of vertices.");
+
+
         if (k2_B.get_number_edges() == 0)
             return *this;
         
         if (this->get_number_edges() == 0)
             return k2_B;
-
-        if (pow(this->k_k, this->k_height) != pow(this->k_k, k2_B.k_height))
-            throw std::logic_error("Trees must have the same number of nodes.");
 
         value_type t_size_A = this->t().size();
         value_type t_size_B = k2_B.t().size();
@@ -473,43 +497,40 @@ public:
         ////////
 
         // Q Initialization
-        std::deque<std::array<value_type, 3>> Q;
-        Q.push_back({0, 1, 1});
+        std::deque<Entry> Q;
+        Q.push_back(Entry(0, 1, 1));
         ////////
-
-        std::array<value_type, 3> next;
-        value_type pA, pB;
+        value_type pA, pB, le;
         pA = 0;
         pB = 0;
+        Entry next;
+        unsigned int i, bA, bB;
 
         while (!Q.empty()) {
             next = Q.front();
             Q.pop_front();
 
-            value_type l = next[0];
-            value_type rA = next[1];
-            value_type rB = next[2];
-            for (value_type i = 0; i < k_k * k_k; ++i) {
-                value_type bA, bB;
+            for (i = 0; i < k_k * k_k; ++i) {
+                le = next.l();
                 bA = 0;
                 bB = 0;
-                if (rA == 1) {
-                    if (l + 1 < this->k_height)
+                if (next.rA() == 1) {
+                    if (le + 1 < this->k_height)
                         bA = this->t()[pA];
                     else
                         bA = this->l()[pA - t_size_A];
                     pA++;
                 }
-                if (rB == 1) {
-                    if (l + 1 < k2_B.k_height)
+                if (next.rB() == 1) {
+                    if (le + 1 < k2_B.k_height)
                         bB = k2_B.k_t[pB];
                     else
                         bB = k2_B.l()[pB - t_size_B];
                     pB++;
                 }
-                C[l].push_back(bA || bB);
-                if ((l + 1 < this->k_height || l + 1 < k2_B.k_height) && (bA || bB))
-                    Q.push_back({l + 1, bA, bB});
+                C[le].push_back(bA || bB);
+                if ((le + 1 < this->k_height || le + 1 < k2_B.k_height) && (bA || bB))
+                    Q.push_back(Entry(le+1, bA, bB));
             }
         }
 

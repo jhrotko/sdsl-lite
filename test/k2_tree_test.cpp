@@ -263,7 +263,7 @@ TYPED_TEST(k2_tree_test_k_2, union_operation_test)
                                {0, 0, 0, 0},
                                {0, 0, 0, 1}});
     TypeParam tree_B(mat);
-
+    
     ASSERT_THROW(tree_A.unionOp(tree_B), std::logic_error);
 }
 
